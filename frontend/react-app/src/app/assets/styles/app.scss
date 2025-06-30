@@ -1,0 +1,42 @@
+@import "reset.scss";
+@import "vars.scss";
+
+body,
+button {
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+.home {
+    .main-area {
+        margin-left: 300px;
+    }
+}
+
+.container {
+    margin: 0 auto;
+    max-width: 1200px;
+    box-sizing: border-box;
+}
+
+svg:focus {
+    outline: 2px solid blue;  /* Добавьте стиль для видимости фокуса */
+  }
+
+.selected  {
+    outline: 2px solid #000 !important;
+}
+
+.main-area {
+    margin-left: 300px;
+}
+
+
+
+@import "./blocks//sidebar.scss";
+@import "./blocks//person-block.scss";
+@import "./blocks/modal.scss";
+@import "./blocks//form.scss";

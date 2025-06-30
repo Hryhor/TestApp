@@ -1,0 +1,17 @@
+import $api from '../api';
+import { IAuthResponse } from '../interfaces';
+import type { AxiosResponse } from 'axios';
+
+export default class AuthService {
+    static async login(email: string, password: string): Promise<AxiosResponse<IAuthResponse>> {
+        return $api.post<IAuthResponse>('/login', {email, password});
+    }
+
+    static async register(name: string, email: string, password: string, role: string): Promise<AxiosResponse<IAuthResponse>> {
+        return $api.post<IAuthResponse>('/register', {name, email, password, role});
+    }
+        
+    static async logout():  Promise<void> {
+        return $api.post('/logout');
+    }
+}
