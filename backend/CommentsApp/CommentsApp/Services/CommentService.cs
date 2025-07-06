@@ -21,18 +21,30 @@ namespace CommentsApp.Services
             _commentRepository = commentRepository;
         }
 
-        public async Task<IEnumerable<Comment>> GetComments(int pageSize = 25, int pageNumber = 1)
+        public async Task<IEnumerable<CommentDTO>> GetComments(int pageSize = 25, int pageNumber = 1)
         {
             IEnumerable<Comment> comments;
-            comments = await _commentRepository.GetAllAsync(pageSize: pageSize, pageNumber: pageNumber);
+            comments = await _commentRepository.GetAllAsync(pageSize: pageSize, pageNumber: pageNumber, includeProperties: "ApplicationUser");
 
-            return comments;
+            var commentDtos = comments.Select(t => new CommentDTO
+            {
+
+                Id = t.Id,
+                Text = t.Text,
+                CreatedDate = t.CreatedDate,
+                UserName = t.ApplicationUser?.UserName
+            });
+
+            return commentDtos;
         }
 
         public async Task<CommentCreateDTO> CreateComment(CommentCreateDTO commentCreateDTO, string userId)
         {
             Comment comment = _mapper.Map<Comment>(commentCreateDTO);
-            comment.ApplicationUser.Id = Convert.ToString(userId);
+
+            comment.ApplicationUserId = Convert.ToString(userId);
+            comment.CreatedDate = DateTime.UtcNow;
+            comment.UpdatedDate = DateTime.UtcNow;
 
             await _commentRepository.CreateAsync(comment);
 

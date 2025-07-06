@@ -1,4 +1,6 @@
 import React, { ChangeEvent, useState }from 'react';
+import  { useSelector } from 'react-redux';
+import {  RootState } from "../../app/store/store";
 //images
 import imgAvatar from '../../app/assets/images/person.svg';
 import imgSignUp from '../../app/assets/images/person-plus.svg';
@@ -11,12 +13,7 @@ import FormLogin from '../FormLogin';
 import FormRegister from '../FormRegister';
 
 const Sidebar: React.FC = () => {
-    const [email, setEmail] = useState("");
-
-    const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
-        const email = e.target.value;
-        setEmail(email);
-    };
+    const auth = useSelector((state: RootState) => state.auth);
 
     return(
         <div className='sidebar'>
@@ -28,22 +25,33 @@ const Sidebar: React.FC = () => {
                 </div>
             </header>
 
-            <ul className='person__menu'>
-                <li className='person__item'>
-                    <ModalButton id='signInModal' className='person__item-btn'>
-                        Sign In
-
-                        <img src={imgSignIn} alt='' />
-                    </ModalButton>
-                </li>
-                <li className='person__item'>
-                    <ModalButton id='signUpModal' className='person__item-btn'>
-                        Sign Up
-
-                        <img src={imgSignUp} alt='' />
-                    </ModalButton>
-                </li>
-            </ul>
+            
+                { auth.user ? 
+                    (
+                        <div>
+                            <button>Logout</button>
+                        </div>
+                    ) : (
+                        <ul className='person__menu'>
+                            <li className='person__item'>
+                                <ModalButton id='signInModal' className='person__item-btn'>
+                                    Sign In
+        
+                                    <img src={imgSignIn} alt='' />
+                                </ModalButton>
+                            </li>
+                            <li className='person__item'>
+                                <ModalButton id='signUpModal' className='person__item-btn'>
+                                    Sign Up
+        
+                                    <img src={imgSignUp} alt='' />
+                                </ModalButton>
+                            </li>
+                        </ul>
+                    )
+                }
+               
+            
 
             <Modal id='signInModal'>
                 <ModalBodyMain>

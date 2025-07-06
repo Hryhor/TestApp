@@ -1,9 +1,10 @@
 import axios from 'axios';
 import React, { ChangeEvent, useState, FormEvent } from "react";
-import { validEmail, validPassword, validName } from '../../utils/validators';
-import FormFeedback from "../FormFeedback";
+//redux
 import { useAppDispatch } from '../../app/hooks';
 import { register } from '../../app/features/auth/authSlice';
+import { validEmail, validPassword, validName } from '../../utils/validators';
+import FormFeedback from "../FormFeedback";
 
 const FormRegister: React.FC = () => {
   const dispatch = useAppDispatch();

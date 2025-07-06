@@ -1,0 +1,32 @@
+.sort-area {
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+
+.sort-list {
+    display: flex;
+    align-items: center;
+}
+
+.sort-btn {
+    padding: 10px 20px;
+    border: none;
+    color: #fff;
+    transition: all cubic-bezier(0.075, 0.82, 0.165, 1) .5s;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+}
+
+.btn-sort-byName {
+    background-color: #0dcaf0;
+}
+
+.btn-sort-byEmail {
+    background-color: #f8d7da;
+}
+
+.btn-sort-byDate {
+    background-color: #d1e7dd;
+}

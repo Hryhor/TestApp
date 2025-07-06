@@ -4,6 +4,7 @@ using CommentsApp.Models;
 using CommentsApp.Models.DTO;
 using CommentsApp.Repository.IRepository;
 using CommentsApp.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -46,6 +47,7 @@ namespace CommentsApp.Controllers
             return Ok(_response);
         }
 
+        [Authorize]
         [HttpPost(Name = "CreateComment")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +67,7 @@ namespace CommentsApp.Controllers
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
-                    _response.ErrorMessages = new List<string>() { "Comment already exists" };
+                    _response.ErrorMessages = new List<string>() { "Comment tt already exists" };
                     return BadRequest(_response);
                 }
 
@@ -75,7 +77,7 @@ namespace CommentsApp.Controllers
                 _response.IsSuccess = true;
                 _response.Result = commentCreated;
 
-                return CreatedAtRoute("GetComment", new { id = commentCreated.Id }, _response);
+                return CreatedAtRoute("GetComments", new { id = commentCreated }, _response);
             }
             catch (Exception ex)
             {

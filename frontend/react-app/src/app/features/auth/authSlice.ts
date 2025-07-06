@@ -1,7 +1,8 @@
 import axios from 'axios';
+import $api  from "../../../api/authApi";
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import AuthService from '../../../services/AuthServices';
-import { IUser, IAuthData } from '../../../interfaces';
+import { IUser, IAuthData, IRequestRefreshDto } from '../../../interfaces';
 
 
 export const register = createAsyncThunk<IAuthData, { name: string, email: string, password: string, role: string }, { rejectValue: string }>(
@@ -9,8 +10,10 @@ export const register = createAsyncThunk<IAuthData, { name: string, email: strin
     async ({ name, email, password, role }, { rejectWithValue }) => {
       try {
         const response = await AuthService.register(name, email, password, role); // Возвращает IAuthResponse
-        localStorage.setItem('token', response.data.result.accessToken);
-        return response.data.result; // 👈 здесь возвращаешь result, а не весь data
+        localStorage.setItem('tokenA',  response.data.result.accessToken);
+        localStorage.setItem('tokenR', response.data.result.refreshToken);
+        localStorage.setItem('user', JSON.stringify(response.data.result.user));
+        return response.data.result;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message);
       }
@@ -21,7 +24,9 @@ export const login = createAsyncThunk<IAuthData, { email: string; password: stri
     async ({ email, password }, { rejectWithValue }) => {
         try {
             const response = await AuthService.login(email, password);
-            localStorage.setItem('token', response.data.result.accessToken);
+            localStorage.setItem('tokenA',  response.data.result.accessToken);
+            localStorage.setItem('tokenR', response.data.result.refreshToken);
+            localStorage.setItem('user', JSON.stringify(response.data.result.user));
             console.log(response.data);
             return response.data.result;
         } catch (error: any) {
@@ -39,12 +44,15 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>('/ap
     }
 });
 
-export const checkAuth = createAsyncThunk<IAuthData, void, { rejectValue: string }>(
+
+export const checkAuth = createAsyncThunk<IAuthData, IRequestRefreshDto, { rejectValue: string }>(
     '/api/refresh', 
-    async (_, { rejectWithValue }) => {
+    async (requestRefreshDto, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/refresh',  { withCredentials: true });
-            localStorage.setItem('token',  response.data.result.accessToken);
+            const response = await $api.post('/refresh', requestRefreshDto);
+            //const response = await axios.post('/api/Auth/refresh',  { withCredentials: true });
+            localStorage.setItem('tokenA',  response.data.result.accessToken);
+            localStorage.setItem('tokenR', response.data.result.refreshToken);
             return response.data.result;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message);
@@ -101,7 +109,7 @@ const authSlice = createSlice({
         builder.addCase(register.fulfilled, (state, action: PayloadAction<IAuthData>) => {
                 state.isLoading = false;
                 state.isAuth = true;
-                //state.user = action.payload.user;
+                state.user = action.payload.user;
             });
         builder.addCase(register.rejected, (state, action: PayloadAction<any>) => {
             state.isLoading = false;
@@ -127,7 +135,7 @@ const authSlice = createSlice({
         builder.addCase(checkAuth.fulfilled, (state, action: PayloadAction<IAuthData>) => {
             state.isLoading = false;
             state.isAuth = true;
-            //state.user = action.payload.user;
+            state.user = action.payload.user;
         });
         builder.addCase(checkAuth.rejected, (state, action: PayloadAction<any>) => {
             state.isLoading = false;

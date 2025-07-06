@@ -1,6 +1,9 @@
 export interface IUser {
     id: string;
     name: string;
+    email: string;
+    userName: string;
+    role: string;
 }
 
 export interface IApiResponse<T> {
@@ -27,3 +30,16 @@ export interface IAuthData {
     user : IUser
 }
 
+export interface IComment {
+    text: string;
+}
+
+export interface IRequestRefreshDto  {
+    refreshToken: string | null,
+    userDTO: IUser,
+};
+
+export interface ICommentRequestDTO {
+    parentId: number | null,
+    Text: string,
+}

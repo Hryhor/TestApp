@@ -9,7 +9,7 @@ namespace CommentsApp.Interfaces
 {
     public interface ICommentService
     {
-        public Task<IEnumerable<Comment>> GetComments(int pageSize = 25, int pageNumber = 1);
+        public Task<IEnumerable<CommentDTO>> GetComments(int pageSize = 25, int pageNumber = 1);
 
         public Task<CommentCreateDTO> CreateComment(CommentCreateDTO commentCreateDTO, string userId);
         public Task<bool> DeleteComment(int id);

@@ -86,7 +86,7 @@ namespace CommentsApp.Services
                     {
                         var userCreated = _mapper.Map<UserDTO>(userToReturn);
                         var takenAccess = _tokenService.GenerateAccessToken(userCreated);
-                        var refreshToken = _tokenService.GenerateRefreshToken(userCreated);
+                        var refreshToken = _tokenService.GenerateRefreshToken(/*userCreated*/);
                         await _tokenService.SaveToken(userCreated, refreshToken);
 
                         var cookieOptions = new CookieOptions
@@ -110,7 +110,7 @@ namespace CommentsApp.Services
 
                 return new RegisterResponseDTO()
                 {
-                    Success = false,
+                    Success = false, //true
                     Error = "User creation failed",
                     AccessToken = null,
                     RefreshToken = null,
@@ -145,6 +145,7 @@ namespace CommentsApp.Services
                         Error = "This User does not exist",
                         AccessToken = null,
                         RefreshToken = null,
+                        User = null,
                     };
                 }
 
@@ -158,6 +159,7 @@ namespace CommentsApp.Services
                         Error = "Your email or passwor does not valid",
                         AccessToken = null,
                         RefreshToken = null,
+                        User = null,
                     };
                 }
 
@@ -166,7 +168,9 @@ namespace CommentsApp.Services
                 //сгенерить токены
                 var userLogin = _mapper.Map<UserDTO>(user);
                 var takenAccess = _tokenService.GenerateAccessToken(userLogin);
-                var refreshToken = _tokenService.GenerateRefreshToken(userLogin);
+                var refreshToken = _tokenService.GenerateRefreshToken(/*userLogin*/);
+
+                await _tokenService.SaveToken(userLogin, refreshToken);
 
                 return new LoginResponseDTO()
                 {
@@ -174,6 +178,7 @@ namespace CommentsApp.Services
                     Error = null,
                     AccessToken = takenAccess,
                     RefreshToken = refreshToken,
+                    User = userLogin,
                 };
             }
             catch (Exception ex)
@@ -184,12 +189,16 @@ namespace CommentsApp.Services
                     Error = ex.Message,
                     AccessToken = null,
                     RefreshToken = null,
+                    User = null,
                 };
             }
         }
 
-        public async Task<RefreshResponceDTO> RefreshAsync(string refreshToken, UserDTO userName)
+        public async Task<RefreshResponceDTO> RefreshAsync(RefreshRequestDTO refreshRequestDTO)
         {
+            var refreshToken = refreshRequestDTO.RefreshToken;
+            var userDto = refreshRequestDTO.User;
+
             if (string.IsNullOrEmpty(refreshToken))
             {
                 return new RefreshResponceDTO
@@ -199,21 +208,23 @@ namespace CommentsApp.Services
                 };
             }
 
-            var userData = _tokenService.ValidateRefreshToken(refreshToken);
+            //var userData = _tokenService.ValidateRefreshToken(refreshToken);
             var tokenFromDb = await _authRepository.GetTokenAsync(refreshToken);
 
-            if (userData == null || tokenFromDb == null)
+            if (/*userData == null ||*/ tokenFromDb == null)
             {
                 return new RefreshResponceDTO
                 {
                     Success = false,
                     Error = "Invalid token or token not found in the database",
                     AccessToken = null,
-                    RefreshToken = null
+                    RefreshToken = null,
+                    User = null,
                 };
             }
 
-            var user = await _authRepository.GetUserByIdAsync(userName.Id);
+            var user = await _authRepository.GetUserByIdAsync(userDto.Id);
+            var roles = await _userManager.GetRolesAsync(user);
 
             if (user == null)
             {
@@ -222,7 +233,8 @@ namespace CommentsApp.Services
                     Success = false,
                     Error = "User not found",
                     AccessToken = null,
-                    RefreshToken = null
+                    RefreshToken = null,
+                    User = null,
                 };
             }
 
@@ -231,13 +243,22 @@ namespace CommentsApp.Services
                 Id = user.Id.ToString(),
                 Name = user.UserName
             });
+            await _tokenService.SaveToken(userDto, tokens.RefreshToken);
 
             return new RefreshResponceDTO
             {
                 Success = true,
                 Error = null,
                 AccessToken = tokens.AccessToken,
-                RefreshToken = tokens.RefreshToken
+                RefreshToken = tokens.RefreshToken,
+                User = new UserDTO
+                {
+                    UserName = user.UserName,
+                    Id = user.Id.ToString(),
+                    Email = user.Email,
+                    Name = user.Name,
+                    Role = roles.FirstOrDefault() ?? "User",
+                }
             };
         }
 
@@ -301,7 +322,6 @@ namespace CommentsApp.Services
                 Success = true,
                 Message = " The email has been successfully verified."
             };
-
         }
     }
 }

@@ -143,9 +143,10 @@ namespace CommentsApp.Controllers
 
                 Response.Cookies.Append("refreshToken", registerResult.RefreshToken, cookieOptions);
 
-                _response.Result = new List<string>() {
-                    registerResult.AccessToken,
-                    registerResult.RefreshToken,
+                _response.Result = new LoginResponseDTO {
+                    AccessToken = registerResult.AccessToken,
+                    RefreshToken = registerResult.RefreshToken,
+                    User = registerResult.User,
                 };
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -200,13 +201,14 @@ namespace CommentsApp.Controllers
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Refresh(UserDTO userName)
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDTO requestDTO)
         {
             try
             {
-                var refreshToken = Request.Cookies["refreshToken"];
+                //var refreshToken = Request.Cookies["refreshToken"];
+               //var userName = requestDTO.UserName;
 
-                var refreshResult = await _userService.RefreshAsync(refreshToken, userName);
+                var refreshResult = await _userService.RefreshAsync(requestDTO);
 
                 if (refreshResult.Success == false)
                 {
@@ -217,9 +219,10 @@ namespace CommentsApp.Controllers
                 }
 
                 _response.IsSuccess = true;
-                _response.Result = new List<string>() {
-                    refreshResult.RefreshToken,
-                    refreshResult.AccessToken,
+                _response.Result = new RefreshResponceDTO {
+                    RefreshToken = refreshResult.RefreshToken,
+                    AccessToken = refreshResult.AccessToken,
+                    User = refreshResult.User,
                 };
                 _response.StatusCode = HttpStatusCode.OK;
 

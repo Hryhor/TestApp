@@ -10,6 +10,10 @@ a {
     text-decoration: none;
 }
 
+.App {
+    position: relative;
+}
+
 .home {
     .main-area {
         margin-left: 300px;
@@ -31,12 +35,40 @@ svg:focus {
 }
 
 .main-area {
+    position: relative;
     margin-left: 300px;
 }
 
+.mani-area__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
 
 
 @import "./blocks//sidebar.scss";
 @import "./blocks//person-block.scss";
 @import "./blocks/modal.scss";
 @import "./blocks//form.scss";
+@import "./blocks/sort-area.scss";
+@import "./blocks/comment.scss";
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    cursor: pointer;
+    background-color: #f2f2f2;
+  }
+  .td {
+    text-align: center;
+  }
+
+  .comm-text {
+    margin-bottom: 15px;
+  }

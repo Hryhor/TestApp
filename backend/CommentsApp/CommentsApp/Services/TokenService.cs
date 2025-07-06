@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace CommentsApp.Services
 {
@@ -27,7 +28,7 @@ namespace CommentsApp.Services
         public Tokens GenerateTokens(UserDTO user)
         {
             var accessToken = this.GenerateAccessToken(user);
-            var refreshToken = this.GenerateRefreshToken(user);
+            var refreshToken = this.GenerateRefreshToken(/*user*/);
 
             return new Tokens
             {
@@ -65,15 +66,13 @@ namespace CommentsApp.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public string GenerateRefreshToken(UserDTO user)
+        public string GenerateRefreshToken(/*UserDTO user*/)
         {
-            /*var randomBytes = new byte[64];
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(randomBytes);
-                return Convert.ToBase64String(randomBytes);
-            }*/
-            var claims = new List<Claim>
+            var bytes = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
+            /*var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
@@ -91,7 +90,7 @@ namespace CommentsApp.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            return tokenHandler.WriteToken(token);*/
         }
 
         public string ValidateAccessToken(string token)
