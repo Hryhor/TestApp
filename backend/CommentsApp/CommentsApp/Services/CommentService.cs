@@ -28,7 +28,6 @@ namespace CommentsApp.Services
 
             var commentDtos = comments.Select(t => new CommentDTO
             {
-
                 Id = t.Id,
                 Text = t.Text,
                 CreatedDate = t.CreatedDate,

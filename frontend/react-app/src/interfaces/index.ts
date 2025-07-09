@@ -31,7 +31,17 @@ export interface IAuthData {
 }
 
 export interface IComment {
+    id: number,
     text: string;
+    parentId: number | null,
+    userName: string,
+    createdDate: number,
+    updatedDate: number,
+    email: string | null,
+    filePath: string| null,
+    fileName: string| null,
+    contentType: string| null,
+    replies?: IComment
 }
 
 export interface IRequestRefreshDto  {
@@ -42,4 +52,9 @@ export interface IRequestRefreshDto  {
 export interface ICommentRequestDTO {
     parentId: number | null,
     Text: string,
+    file?: File,
 }
+
+
+
+

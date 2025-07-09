@@ -27,7 +27,7 @@ a {
 }
 
 svg:focus {
-    outline: 2px solid blue;  /* Добавьте стиль для видимости фокуса */
+    outline: 2px solid blue; 
   }
 
 .selected  {
@@ -39,12 +39,24 @@ svg:focus {
     margin-left: 300px;
 }
 
-.mani-area__header {
+.main-area__header {
     display: flex;
     align-items: center;
-    justify-content: space-between
+    justify-content: space-between;
+    padding-top: 15px;
+    margin-bottom: 15px;
 }
 
+.main-area__content {
+    margin-bottom: 15px;
+}
+
+.main-area__footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
 
 @import "./blocks//sidebar.scss";
 @import "./blocks//person-block.scss";
@@ -52,23 +64,6 @@ svg:focus {
 @import "./blocks//form.scss";
 @import "./blocks/sort-area.scss";
 @import "./blocks/comment.scss";
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-  }
-  th {
-    cursor: pointer;
-    background-color: #f2f2f2;
-  }
-  .td {
-    text-align: center;
-  }
-
-  .comm-text {
-    margin-bottom: 15px;
-  }
+@import "./blocks/file-upload-btn.scss";
+@import "./blocks/table.scss";
+@import "./blocks/pagination.scss";

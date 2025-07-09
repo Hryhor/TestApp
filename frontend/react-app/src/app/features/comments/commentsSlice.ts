@@ -5,11 +5,11 @@ import CommentService  from '../../../services/СommentService';
 import { ICommentRequestDTO } from '../../../interfaces';
 
 
-export const getComments = createAsyncThunk<IComment[], { pageSize?: number, pageNumber?: number }, { rejectValue: string }>(
+export const getComments = createAsyncThunk<IComment[], { pageSize?: number, pageNumber?: number, sortBy?: string, descending?: boolean }, { rejectValue: string }>(
     'comments/getAll',
-    async ({ pageSize = 25, pageNumber = 1 }, { rejectWithValue }) => {
+    async ({ pageSize = 25, pageNumber = 1, sortBy, descending }, { rejectWithValue }) => {
         try {
-            const response = await CommentService.getComment({pageSize, pageNumber});
+            const response = await CommentService.getComment({pageSize, pageNumber, sortBy, descending });
             return response.data.result;
         } 
         catch (error: any) {
@@ -18,11 +18,19 @@ export const getComments = createAsyncThunk<IComment[], { pageSize?: number, pag
     }
 );
 
-export const createComment = createAsyncThunk<IComment, { commentRequestDTO: ICommentRequestDTO; pageSize?: number; pageNumber?: number }, { rejectValue: string }>(
+export const createComment = createAsyncThunk<IComment, { commentRequestDTO: ICommentRequestDTO; file?: File; pageSize?: number; pageNumber?: number }, { rejectValue: string }>(
     '/api/Comment',
-    async ({commentRequestDTO, pageSize, pageNumber }, { rejectWithValue }) => {
+    async ({commentRequestDTO, file, pageSize, pageNumber }, { rejectWithValue }) => {
         try{
-            const response = await CommentService.createComment(commentRequestDTO, pageSize, pageNumber);;
+            const formData = new FormData();
+            formData.append("Text", commentRequestDTO.Text);
+            if (commentRequestDTO.parentId !== null) {
+                formData.append("ParentId", commentRequestDTO.parentId.toString());
+              }
+            if (file) {
+                formData.append("file", file);
+            }
+            const response = await CommentService.createComment(formData, pageSize, pageNumber);
             return response.data.result;
         }catch(error: any){
             return rejectWithValue(error.response?.data?.message);
