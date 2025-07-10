@@ -10,6 +10,18 @@ export const validName = (value: string): boolean => {
     }
 }
 
+export const validUserName = (value: string): boolean => {
+    const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+
+    if (!usernameRegex.test(value)) {
+        console.log('Invalid Username');
+        return false;
+    } else {
+        console.log('Valid Username');
+        return true;
+    }
+}
+
 //Qw2#Er4$
 export const validPassword = (value: string) => {
     if (!isStrongPassword(value, {

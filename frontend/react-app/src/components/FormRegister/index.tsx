@@ -3,22 +3,33 @@ import React, { ChangeEvent, useState, FormEvent } from "react";
 //redux
 import { useAppDispatch } from '../../app/hooks';
 import { register } from '../../app/features/auth/authSlice';
-import { validEmail, validPassword, validName } from '../../utils/validators';
+import { validEmail, validPassword, validName, validUserName } from '../../utils/validators';
 import FormFeedback from "../FormFeedback";
 
-const FormRegister: React.FC = () => {
+type FormRegisterProps = {
+  onClose?: () => void;
+};
+
+const FormRegister: React.FC<FormRegisterProps> = ({ onClose }) => {
   const dispatch = useAppDispatch();
-  const [name, setUsername] = useState("");
+
+  const [name, setName] = useState("");
+  const [userName, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConf, setPasswordConf] = useState("");
   const [email, setEmail] = useState("");
-
+  
   const [hasError, setHasError] = useState({
     name: false,
+    userName: false,
     email: false,
     password: false,
     passwordConfirm: false,
   });
+
+  const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
 
   const onChangeUsername = (e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -40,12 +51,14 @@ const FormRegister: React.FC = () => {
     e.preventDefault();
 
     const isNameValid = validName(name);
+    const isUserNameValid = validUserName(userName);
     const isEmailValid = validEmail(email);
     const isPasswordValid = validPassword(password);
     const isPasswordConfirmValid = password === passwordConf;
 
     const newErrors = {
       name: !isNameValid,
+      userName: !isUserNameValid,
       email: !isEmailValid,
       password: !isPasswordValid,
       passwordConfirm: !isPasswordConfirmValid,
@@ -60,8 +73,9 @@ const FormRegister: React.FC = () => {
 
     try {
       console.log('→ Отправляем запрос на регистрацию…');
-      const result = await dispatch(register({ name, email, password, role: 'User'})).unwrap();
+      const result = await dispatch(register({ name, userName, email, password, role: 'User'})).unwrap();
       console.log('Регистрация успешна:', result);
+      if(onClose) onClose();
       // здесь  делать редирект или закрыть модалку
     } catch (err: any) {
         if (axios.isAxiosError(err)) {
@@ -73,7 +87,7 @@ const FormRegister: React.FC = () => {
               console.error('Ошибка настройки запроса:', err.message);
             }
           } else {
-            console.error('Непредвиденная ошибка:', err);
+            console.error('Непредвиденная ошибка:', err.message);
           }
     }
   };
@@ -84,10 +98,23 @@ const FormRegister: React.FC = () => {
         <label className='form-label'>Please enter your name:</label>
         <FormFeedback hasError={hasError.name}>This name is incorrect</FormFeedback>
         <input
-          name='username'
+          name='user'
           value={name}
           className='form-input'
           placeholder='Jon'
+          type='text'
+          onChange={onChangeName}
+        />
+      </div>
+
+      <div className='form-group'>
+        <label className='form-label'>Please enter your username:</label>
+        <FormFeedback hasError={hasError.userName}>This name is incorrect</FormFeedback>
+        <input
+          name='username'
+          value={userName}
+          className='form-input'
+          placeholder='Jon123'
           type='text'
           onChange={onChangeUsername}
         />

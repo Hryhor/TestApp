@@ -17,29 +17,34 @@ function App() {
 
   
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    const refreshToken = localStorage.getItem('tokenR');
+    try {
+      const userStr = localStorage.getItem('user');
+      const refreshToken = localStorage.getItem('tokenR');
 
-    if (userStr && refreshToken) {
-      const user = JSON.parse(userStr);
-      user.role = 'user';
+      if (userStr && refreshToken) {
+        const user = JSON.parse(userStr);
+        user.role = 'user';
 
-      const usert = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        userName: user.userName,
-        role: user.role,
+        const usert = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          userName: user.userName,
+          role: user.role,
+        }
+
+        const requestDto: IRequestRefreshDto = {
+          refreshToken: refreshToken,
+          userDTO: usert,
+        };
+
+        dispatch(checkAuth(requestDto));
       }
-
-      const requestDto: IRequestRefreshDto = {
-        refreshToken: refreshToken,
-        userDTO: usert,
-      };
-
-      dispatch(checkAuth(requestDto));
     }
-   
+    catch (err) {
+      console.error("Error parsing user from localStorage:", err);
+      localStorage.removeItem("user");
+    }
   }, [dispatch]);
 
   return (

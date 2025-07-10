@@ -28,6 +28,7 @@ const Home: React.FC = () => {
     const [captchaId, setCaptchaId] = useState("");
     const [captchaUrl, setCaptchaUrl] = useState("");
     const [userInput, setUserInput] = useState("");
+    const [showCaptcha, setShowCaptcha] = useState(false)
 
     //console.log(comments)
     const loadCaptcha = async () => {
@@ -37,7 +38,7 @@ const Home: React.FC = () => {
         console.log("Captcha-Id from server:", id);
         setCaptchaId(id);
         setCaptchaUrl(URL.createObjectURL(blob));
-      };
+    };
 
     useEffect(() => {
         const init = async () => {
@@ -48,6 +49,26 @@ const Home: React.FC = () => {
         init();
     }, []);
 
+
+    useEffect(() => {
+        dispatch(getComments({ pageSize: 25, pageNumber: currentPage, sortBy, descending }));
+    }, [currentPage, sortBy, descending  ]);
+
+
+    const sort = (column: string) => {
+        if (sortBy === column) {
+            setDescending(!descending);
+        } else {
+            setSortBy(column);
+            setDescending(false); 
+        }
+    };
+    
+    const onChangeComment = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        const newComment = e.target.value;
+        setNewComment(newComment);
+    }
+   
     const handleSubmit = async (): Promise<boolean> => {
         if (!captchaId) {
             alert("CAPTCHA не загружена. Попробуйте ещё раз.");
@@ -75,31 +96,13 @@ const Home: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        dispatch(getComments({ pageSize: 25, pageNumber: currentPage, sortBy, descending }));
-    }, [currentPage, sortBy, descending  ]);
-
-
-    const sort = (column: string) => {
-        if (sortBy === column) {
-            setDescending(!descending);
-        } else {
-            setSortBy(column);
-            setDescending(false); 
-        }
-    };
-    
-    const onChangeComment = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        const newComment = e.target.value;
-        setNewComment(newComment);
-    }
-
-    const closeModal = (id: string) => {
-        const modal = document.querySelector(`.modal#${id}`);
-        modal?.classList.remove('visible');
-    };
-
     const submit = async () => {
+        if (!showCaptcha) {
+            setShowCaptcha(true);
+            await loadCaptcha();
+            return;
+        }
+
         const isValid = await handleSubmit();
         if (!isValid) return;
 
@@ -121,18 +124,16 @@ const Home: React.FC = () => {
             await dispatch(createComment({commentRequestDTO, ...(file && { file }), pageSize: 25, pageNumber: 1, }));
             await dispatch(getComments({ pageSize: 25, pageNumber: 1 }));
             setNewComment(''); 
+
+            setUserInput('');
+            setFile(null);
+            setShowCaptcha(false);
         }
 
         if (modalRef.current) {
             modalRef.current.classList.remove("visible");
         }
     }
-
-    const openModal = () => {
-        if (modalRef.current) {
-          modalRef.current.classList.add('visible');
-        }
-      };
 
     return(
         <div>
@@ -182,21 +183,23 @@ const Home: React.FC = () => {
             <Modal ref={modalRef}>
                 <ModalBodyMain>
                     <div>
-                        <div className="captcha-block">
-                            <img src={captchaUrl} alt="Captcha" />
-                            <input
-                                type="text"
-                                placeholder="Введите CAPTCHA"
-                                value={userInput}
-                                onChange={(e) => setUserInput(e.target.value)}
-                            />
-                        </div>
                         <textarea 
                             className="comment-сreate" 
                             placeholder="your answer"
                             onChange={onChangeComment}
                         >  
                         </textarea>
+                        { showCaptcha && (
+                            <div className="captcha-block">
+                                <img src={captchaUrl} alt="Captcha" />
+                                <input
+                                    type="text"
+                                    placeholder="Enter CAPTCHA"
+                                    value={userInput}
+                                    onChange={(e) => setUserInput(e.target.value)}
+                                />
+                            </div>
+                        )}
                         <div className="comment-btn-block">
                             <FileUploadButton 
                                 onFileSelect={(selectedFile) => setFile(selectedFile)}

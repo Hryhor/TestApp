@@ -7,7 +7,12 @@ import { validEmail, validPassword } from "../../utils/validators";
 import FormFeedback from "../FormFeedback";
 
 
-const FormLogin: React.FC = () => {
+type FormLoginProps = {
+    onClose?: () => void;
+};
+
+
+const FormLogin: React.FC<FormLoginProps> = ({ onClose }) => {
     const dispatch = useAppDispatch();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -41,6 +46,7 @@ const FormLogin: React.FC = () => {
             console.log('→ Отправляем запрос на вход в систему…');
             const result = await dispatch(login({email, password})).unwrap();
             console.log('Вы вошли в систему:', result);
+            if(onClose) onClose();
         } catch (err: any) {
             if (axios.isAxiosError(err)) {
                 if (err.response) {

@@ -5,11 +5,11 @@ import AuthService from '../../../services/AuthServices';
 import { IUser, IAuthData, IRequestRefreshDto } from '../../../interfaces';
 
 
-export const register = createAsyncThunk<IAuthData, { name: string, email: string, password: string, role: string }, { rejectValue: string }>(
+export const register = createAsyncThunk<IAuthData, { name: string, userName: string, email: string, password: string, role: string }, { rejectValue: string }>(
     '/api/register',
-    async ({ name, email, password, role }, { rejectWithValue }) => {
+    async ({ name, userName, email, password, role }, { rejectWithValue }) => {
       try {
-        const response = await AuthService.register(name, email, password, role); // Возвращает IAuthResponse
+        const response = await AuthService.register(name, userName, email, password, role); // Возвращает IAuthResponse
         localStorage.setItem('tokenA',  response.data.result.accessToken);
         localStorage.setItem('tokenR', response.data.result.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.result.user));

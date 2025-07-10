@@ -7,8 +7,8 @@ export default class AuthService {
         return $api.post<IAuthResponse>('/login', {email, password});
     }
 
-    static async register(name: string, email: string, password: string, role: string): Promise<AxiosResponse<IAuthResponse>> {
-        return $api.post<IAuthResponse>('/register', {name, email, password, role});
+    static async register(name: string, userName: string, email: string, password: string, role: string): Promise<AxiosResponse<IAuthResponse>> {
+        return $api.post<IAuthResponse>('/register', {name, userName, email, password, role});
     }
         
     static async logout():  Promise<void> {

@@ -18,6 +18,14 @@ const Sidebar: React.FC = () => {
     const signInModalRef = useRef<HTMLDivElement>(null);
     const signUpModalRef = useRef<HTMLDivElement>(null);
 
+    const closeSignUpModal = () => {
+        signUpModalRef.current?.classList.remove("visible");
+    };
+
+    const closeSignInModal = () => {
+        signInModalRef.current?.classList.remove("visible");
+    };
+
 
     return(
         <div className='sidebar'>
@@ -57,13 +65,13 @@ const Sidebar: React.FC = () => {
 
             <Modal ref={signInModalRef}>
                 <ModalBodyMain>
-                    <FormLogin />
+                    <FormLogin  onClose={closeSignInModal} />
                 </ModalBodyMain>
             </Modal>
 
             <Modal ref={signUpModalRef}>
                 <ModalBodyMain>
-                    <FormRegister />
+                    <FormRegister onClose={closeSignUpModal} />
                 </ModalBodyMain>
             </Modal>
         </div>
