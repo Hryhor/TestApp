@@ -13,6 +13,8 @@ using Serilog;
 using System.Text;
 using CommentsApp.Interfaces;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.FileProviders;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -39,32 +41,35 @@ builder.Services.AddCors(options =>
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddSwaggerGen(options => {
+builder.Services.AddSwaggerGen(options =>
+{
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT авторизация через Bearer токен. Пример: 'Bearer {token}'",
+        Description = "JWT Authorization header using the Bearer scheme",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                Reference =  new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
 });
+
+
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.AddDbContext<ApplicationDbContext>(option =>
@@ -94,6 +99,12 @@ builder.Services.AddAuthentication(option =>
     };
 });
 
+/*builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var config = ConfigurationOptions.Parse("localhost:6379", true);
+    return ConnectionMultiplexer.Connect(config);
+});*/
+
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -101,6 +112,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddSingleton<CaptchaService>();
 
 
 var app = builder.Build();
@@ -117,10 +129,15 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
+
+app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")), // путь к папке
+    RequestPath = "/Uploads" // путь в URL
+});
 
 app.Run();

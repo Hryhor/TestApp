@@ -28,7 +28,7 @@ namespace CommentsApp.Services
         public Tokens GenerateTokens(UserDTO user)
         {
             var accessToken = this.GenerateAccessToken(user);
-            var refreshToken = this.GenerateRefreshToken(/*user*/);
+            var refreshToken = this.GenerateRefreshToken(user);
 
             return new Tokens
             {
@@ -47,6 +47,7 @@ namespace CommentsApp.Services
 
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.Name)
             };
 
@@ -56,7 +57,7 @@ namespace CommentsApp.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(30), // Задайте время жизни токена
+                Expires = DateTime.UtcNow.AddMinutes(30), 
                 SigningCredentials = creds
             };
 
@@ -66,12 +67,15 @@ namespace CommentsApp.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public string GenerateRefreshToken(/*UserDTO user*/)
+        public string GenerateRefreshToken(UserDTO user)
         {
-            var bytes = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-            return Convert.ToBase64String(bytes);
+            /*var randomBytes = new byte[64];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(randomBytes);
+                return Convert.ToBase64String(randomBytes);
+            }*/
+
             /*var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
@@ -91,6 +95,10 @@ namespace CommentsApp.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);*/
+            var bytes = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
         }
 
         public string ValidateAccessToken(string token)
@@ -112,9 +120,8 @@ namespace CommentsApp.Services
                 if (validatedToken is JwtSecurityToken jwtToken &&
                     jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    // Извлекаем имя пользователя из ClaimsPrincipal
-                    var userName = principal.Identity?.Name; // Это основное имя (Name)
-                    return userName; // Возвращаем имя пользователя
+                    var userName = principal.Identity?.Name; 
+                    return userName;
                 }
                 else
                 {
@@ -145,7 +152,6 @@ namespace CommentsApp.Services
 
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
-                // Извлекаем userId из claims
                 var userId = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 return userId;
             }
@@ -169,12 +175,12 @@ namespace CommentsApp.Services
 
             if (existingToken != null)
             {
-                existingToken.Value = refreshToken; // Обновляем токен
+                existingToken.Value = refreshToken; 
                 _db.UserTokens.Update(existingToken);
             }
             else
             {
-                await _db.UserTokens.AddAsync(userToken); // Добавляем новый токен
+                await _db.UserTokens.AddAsync(userToken); 
             }
 
             await _db.SaveChangesAsync();

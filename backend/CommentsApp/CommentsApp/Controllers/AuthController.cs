@@ -80,18 +80,12 @@ namespace CommentsApp.Controllers
                 Response.Cookies.Append("refreshToken", registerResult.RefreshToken, cookieOptions);
                 await _emailService.SendEmailAsync(registerResult.applicationUser.Email, "Подтверждение почты", $"Перейдите по следующей ссылке для подтверждения: {confirmationLink}");
 
-                /*_response.Result = new List<string> {
-                    registerResult.AccessToken,
-                    registerResult.RefreshToken,
-                    registerResult.applicationUser
-                };*/
-
                 _response.Result = new RegisterResponseDTO
                 {
                     Success = registerResult.Success,
                     AccessToken = registerResult.AccessToken,
                     RefreshToken = registerResult.RefreshToken,
-                    applicationUser = registerResult.applicationUser,
+                    User = registerResult.User,
                 };
 
                 _response.StatusCode = HttpStatusCode.OK;
@@ -144,9 +138,9 @@ namespace CommentsApp.Controllers
                 Response.Cookies.Append("refreshToken", registerResult.RefreshToken, cookieOptions);
 
                 _response.Result = new LoginResponseDTO {
-                    AccessToken = registerResult.AccessToken,
-                    RefreshToken = registerResult.RefreshToken,
-                    User = registerResult.User,
+                   AccessToken = registerResult.AccessToken,
+                   RefreshToken = registerResult.RefreshToken,
+                   User = registerResult.User,
                 };
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -165,11 +159,11 @@ namespace CommentsApp.Controllers
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO requestDTO)
         {
             try
             {
-                var refreshToken = Request.Cookies["refreshToken"];
+                var refreshToken = requestDTO.RefreshToken;
 
                 var logoutResult = await _userService.LogoutAsync(refreshToken);
 
@@ -182,7 +176,7 @@ namespace CommentsApp.Controllers
                     return BadRequest(_response);
                 }
 
-                Response.Cookies.Delete("refreshToken");
+                //Response.Cookies.Delete("refreshToken");
 
                 _response.IsSuccess = logoutResult.Success;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -201,14 +195,15 @@ namespace CommentsApp.Controllers
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDTO requestDTO)
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequestDTO refreshRequestDTO)
         {
             try
             {
-                //var refreshToken = Request.Cookies["refreshToken"];
-               //var userName = requestDTO.UserName;
+                //var refreshToken = Request.Cookies["refreshToken"];\
+                var refreshToken = refreshRequestDTO.refreshToken;
+                var userDTO = refreshRequestDTO.userDTO;
 
-                var refreshResult = await _userService.RefreshAsync(requestDTO);
+                var refreshResult = await _userService.RefreshAsync(refreshRequestDTO);
 
                 if (refreshResult.Success == false)
                 {

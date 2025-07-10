@@ -4,7 +4,7 @@ namespace CommentsApp.Interfaces.Auth
 {
     public interface IUserService
     {
-        Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO requestDTO);
+        Task<RegisterResultDTO> RegisterAsync(RegisterRequestDTO requestDTO);
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO requestDTO);
         Task<LogoutResponceDTO> LogoutAsync(string refreshToken);
         Task<RefreshResponceDTO> RefreshAsync(RefreshRequestDTO refreshRequestDTO);

@@ -9,7 +9,7 @@ namespace CommentsApp.Repository.IRepository
         //Task<UserDTO> Login(LoginRequestDTO loginRequestDTO);
         bool IsUniqueUser(string email);
         Task<ApplicationUser?> GetUserByEmailAsync(string email);
-        Task<ApplicationUser?> GetUserByNameAsync(string name);
+        Task<ApplicationUser?> GetUserByUserNameAsync(string userName);
         Task<ApplicationUser?> GetUserByIdAsync(string id);
         Task<bool> CreateUserAsync(ApplicationUser applicationUser, string password);
         Task<bool> RoleExistsAsync(string roleName);

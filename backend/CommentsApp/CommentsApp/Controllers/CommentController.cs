@@ -7,6 +7,7 @@ using CommentsApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using System.Net;
 using System.Security.Claims;
 
@@ -28,11 +29,11 @@ namespace CommentsApp.Controllers
         [HttpGet(Name = "GetComments")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetComments(int pageSize = 25, int pageNumber = 1) 
+        public async Task<IActionResult> GetComments(int pageSize = 25, int pageNumber = 1, string? sortBy = null, bool descending = false) 
         {
             try
             {
-                var comments = await _commentService.GetComments(pageSize, pageNumber);
+                var comments = await _commentService.GetComments(pageSize, pageNumber, sortBy, descending);
 
                 _response.Result = comments;
                 _response.StatusCode = HttpStatusCode.OK;
@@ -47,11 +48,20 @@ namespace CommentsApp.Controllers
             return Ok(_response);
         }
 
-        [Authorize]
+        [HttpGet("test-redis")]
+        public async Task<IActionResult> TestRedis([FromServices] IConnectionMultiplexer redis)
+        {
+            var db = redis.GetDatabase();
+            await db.StringSetAsync("test", "Hello Redis!", TimeSpan.FromMinutes(1));
+            var value = await db.StringGetAsync("test");
+            return Ok(value);
+        }
+
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost(Name = "CreateComment")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateComment([FromBody] CommentCreateDTO commentCreateDTO)
+        public async Task<IActionResult> CreateComment([FromForm] CommentCreateDTO commentCreateDTO, IFormFile? file)
         {
             try
             {
@@ -67,11 +77,11 @@ namespace CommentsApp.Controllers
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
-                    _response.ErrorMessages = new List<string>() { "Comment tt already exists" };
+                    _response.ErrorMessages = new List<string>() { "User is not authenticated" };
                     return BadRequest(_response);
                 }
 
-                var commentCreated = await _commentService.CreateComment(commentCreateDTO, userId);
+                var commentCreated = await _commentService.CreateComment(commentCreateDTO, userId, file);
 
                 _response.StatusCode = HttpStatusCode.Created;
                 _response.IsSuccess = true;
@@ -85,8 +95,7 @@ namespace CommentsApp.Controllers
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
                 return BadRequest(_response);
-            }
-            
+            }  
         }
 
         [HttpDelete("{id:int}", Name = "DeleteComment")]

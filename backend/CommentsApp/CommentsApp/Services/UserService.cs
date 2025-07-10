@@ -33,7 +33,7 @@ namespace CommentsApp.Services
             _tokenService = tokenService;
         }
 
-        public async Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO requestDTO)
+        public async Task<RegisterResultDTO> RegisterAsync(RegisterRequestDTO requestDTO)
         {
             try
             {
@@ -42,89 +42,91 @@ namespace CommentsApp.Services
                     Email = requestDTO.Email,
                     NormalizedEmail = requestDTO.Email.ToUpper(),
                     Name = requestDTO.Name,
-                    UserName = requestDTO.Name,
+                    UserName = requestDTO.UserName,
                 };
 
-                var createdUser = await _authRepository.CreateUserAsync(applicationUser, requestDTO.Password); //await _userManager.CreateAsync(applicationUser, requestDTO.Password);
+                var createdUser = await _authRepository.CreateUserAsync(applicationUser, requestDTO.Password); 
 
                 if (!createdUser)
                 {
-                    return new RegisterResponseDTO()
+                    return new RegisterResultDTO()
                     {
                         Success = false,
                         Error = "User creation failed",
                         AccessToken = null,
                         RefreshToken = null,
                         applicationUser = null,
+                        User = null,
                     };
                 }
 
-                if (createdUser)
+                if (!await _authRepository.RoleExistsAsync("user"))
                 {
-                    if (!await _authRepository.RoleExistsAsync("customer"))
-                    {
-                        await _authRepository.CreateRoleAsync("customer");
-                    }
-
-                    if (!await _authRepository.RoleExistsAsync("admin"))
-                    {
-                        await _authRepository.CreateRoleAsync("admin");
-                    }
-
-                    if (requestDTO.Email == "hryhorenko.illia@gmail.com")
-                    {
-                        await _authRepository.AddUserToRoleAsync(applicationUser, "admin");
-                    }
-                    else
-                    {
-                        await _authRepository.AddUserToRoleAsync(applicationUser, "customer");
-                    }
-
-                    var userToReturn = await _authRepository.GetUserByNameAsync(requestDTO.Name);
-
-                    if (userToReturn != null)
-                    {
-                        var userCreated = _mapper.Map<UserDTO>(userToReturn);
-                        var takenAccess = _tokenService.GenerateAccessToken(userCreated);
-                        var refreshToken = _tokenService.GenerateRefreshToken(/*userCreated*/);
-                        await _tokenService.SaveToken(userCreated, refreshToken);
-
-                        var cookieOptions = new CookieOptions
-                        {
-                            HttpOnly = true, // Только для HTTP, не доступно через JavaScript
-                            Secure = true,   // Использовать cookie только через HTTPS
-                            MaxAge = TimeSpan.FromDays(30), // Срок действия cookie (30 дней)
-                            SameSite = SameSiteMode.Strict // Защищает от CSRF атак
-                        };
-
-                        return new RegisterResponseDTO()
-                        {
-                            Success = true,
-                            Error = null,
-                            AccessToken = takenAccess,
-                            RefreshToken = refreshToken,
-                            applicationUser = userToReturn,
-                        };
-                    }
+                    await _authRepository.CreateRoleAsync("user");
                 }
 
-                return new RegisterResponseDTO()
+                if (!await _authRepository.RoleExistsAsync("admin"))
                 {
-                    Success = false, //true
-                    Error = "User creation failed",
-                    AccessToken = null,
-                    RefreshToken = null,
-                    applicationUser = null,
+                    await _authRepository.CreateRoleAsync("admin");
+                }
+
+                if (requestDTO.Email == "hryhorenko.illia@gmail.com")
+                {
+                    await _authRepository.AddUserToRoleAsync(applicationUser, "admin");
+                }
+                else
+                {
+                    await _authRepository.AddUserToRoleAsync(applicationUser, "user");
+                }
+
+                var userToReturn = await _authRepository.GetUserByUserNameAsync(requestDTO.UserName);
+
+                if (userToReturn == null)
+                {
+                    return new RegisterResultDTO()
+                    {
+                        Success = true,
+                        Error = "User creation failed",
+                        AccessToken = null,
+                        RefreshToken = null,
+                        applicationUser = null,
+                        User = null,
+                    };
+                }
+              
+                var userCreated = _mapper.Map<UserDTO>(userToReturn);
+                var takenAccess = _tokenService.GenerateAccessToken(userCreated);
+                var refreshToken = _tokenService.GenerateRefreshToken(userCreated);
+                await _tokenService.SaveToken(userCreated, refreshToken);
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true, // Только для HTTP, не доступно через JavaScript
+                    Secure = true,   // Использовать cookie только через HTTPS
+                    MaxAge = TimeSpan.FromDays(30), // Срок действия cookie (30 дней)
+                    SameSite = SameSiteMode.Strict // Защищает от CSRF атак
+                };
+
+                return new RegisterResultDTO()
+                {
+                    Success = true,
+                    Error = null,
+                    AccessToken = takenAccess,
+                    RefreshToken = refreshToken,
+                    applicationUser = applicationUser,
+                    User = userCreated,
                 };
             }
             catch (Exception ex)
             {
-                return new RegisterResponseDTO()
+                return new RegisterResultDTO()
                 {
                     Success = false,
                     Error = ex.Message,
                     AccessToken = null,
                     RefreshToken = null,
+                    applicationUser = null,
+                    User = null,
                 };
             }
         }
@@ -145,7 +147,6 @@ namespace CommentsApp.Services
                         Error = "This User does not exist",
                         AccessToken = null,
                         RefreshToken = null,
-                        User = null,
                     };
                 }
 
@@ -168,7 +169,7 @@ namespace CommentsApp.Services
                 //сгенерить токены
                 var userLogin = _mapper.Map<UserDTO>(user);
                 var takenAccess = _tokenService.GenerateAccessToken(userLogin);
-                var refreshToken = _tokenService.GenerateRefreshToken(/*userLogin*/);
+                var refreshToken = _tokenService.GenerateRefreshToken(userLogin);
 
                 await _tokenService.SaveToken(userLogin, refreshToken);
 
@@ -189,15 +190,14 @@ namespace CommentsApp.Services
                     Error = ex.Message,
                     AccessToken = null,
                     RefreshToken = null,
-                    User = null,
                 };
             }
         }
 
         public async Task<RefreshResponceDTO> RefreshAsync(RefreshRequestDTO refreshRequestDTO)
         {
-            var refreshToken = refreshRequestDTO.RefreshToken;
-            var userDto = refreshRequestDTO.User;
+            var refreshToken = refreshRequestDTO.refreshToken;
+            var userDTO = refreshRequestDTO.userDTO;
 
             if (string.IsNullOrEmpty(refreshToken))
             {
@@ -208,7 +208,7 @@ namespace CommentsApp.Services
                 };
             }
 
-            //var userData = _tokenService.ValidateRefreshToken(refreshToken);
+           // var userData = _tokenService.ValidateRefreshToken(refreshToken);
             var tokenFromDb = await _authRepository.GetTokenAsync(refreshToken);
 
             if (/*userData == null ||*/ tokenFromDb == null)
@@ -223,8 +223,7 @@ namespace CommentsApp.Services
                 };
             }
 
-            var user = await _authRepository.GetUserByIdAsync(userDto.Id);
-            var roles = await _userManager.GetRolesAsync(user);
+            var user = await _authRepository.GetUserByIdAsync(userDTO.Id);
 
             if (user == null)
             {
@@ -243,7 +242,8 @@ namespace CommentsApp.Services
                 Id = user.Id.ToString(),
                 Name = user.UserName
             });
-            await _tokenService.SaveToken(userDto, tokens.RefreshToken);
+
+            await _tokenService.SaveToken(userDTO, tokens.RefreshToken);
 
             return new RefreshResponceDTO
             {
@@ -251,14 +251,7 @@ namespace CommentsApp.Services
                 Error = null,
                 AccessToken = tokens.AccessToken,
                 RefreshToken = tokens.RefreshToken,
-                User = new UserDTO
-                {
-                    UserName = user.UserName,
-                    Id = user.Id.ToString(),
-                    Email = user.Email,
-                    Name = user.Name,
-                    Role = roles.FirstOrDefault() ?? "User",
-                }
+                User = _mapper.Map<UserDTO>(user),
             };
         }
 
@@ -322,6 +315,7 @@ namespace CommentsApp.Services
                 Success = true,
                 Message = " The email has been successfully verified."
             };
+
         }
     }
 }

@@ -8,7 +8,7 @@ namespace CommentsApp.Interfaces.Auth
     {
         Tokens GenerateTokens(UserDTO user);
         string GenerateAccessToken(UserDTO user);
-        string GenerateRefreshToken(/*UserDTO user*/);
+        string GenerateRefreshToken(UserDTO user);
         Task SaveToken(UserDTO user, string refreshToken);
         Task DeleteToken(string token);
         string ValidateAccessToken(string token);

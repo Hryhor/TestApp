@@ -48,9 +48,9 @@ namespace CommentsApp.Repository
             return user;
         }
 
-        public async Task<ApplicationUser?> GetUserByNameAsync(string name)
+        public async Task<ApplicationUser?> GetUserByUserNameAsync(string userName)
         {
-            var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.UserName == name);
+            var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.UserName == userName);
 
             if (user == null)
             {
