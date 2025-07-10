@@ -1,5 +1,6 @@
 import axios from "axios";
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha"; 
 import { RootState } from "../app/store/store";
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from "../app/hooks";
@@ -10,23 +11,69 @@ import ModalButton from "../components/ui/ModelButton";
 import CommentItem from "../components/Commentitem";
 import Sidebar from "../components/Sidebar";
 import FileUploadButton from "../components/FileUploadButton";
+import { API_URL } from "../api";
 
 
 const Home: React.FC = () => {
     const dispatch = useAppDispatch();
     const auth = useSelector((state: RootState) => state.auth);
     const comments = useSelector((state: any) => state.comments.items);
+    const modalRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [newComment, setNewComment] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [sortBy, setSortBy] = useState<string>("CreatedDate");
     const [descending, setDescending] = useState<boolean>(true);
 
-    console.log(comments)
+    const [captchaId, setCaptchaId] = useState("");
+    const [captchaUrl, setCaptchaUrl] = useState("");
+    const [userInput, setUserInput] = useState("");
+
+    //console.log(comments)
+    const loadCaptcha = async () => {
+        const res = await fetch(`${API_URL}/captcha/generate`);
+        const blob = await res.blob();
+        const id = res.headers.get("Captcha-Id")!;
+        console.log("Captcha-Id from server:", id);
+        setCaptchaId(id);
+        setCaptchaUrl(URL.createObjectURL(blob));
+      };
 
     useEffect(() => {
-        dispatch(getComments({ pageSize: 25, pageNumber: currentPage, }));
+        const init = async () => {
+            await loadCaptcha();
+            dispatch(getComments({ pageSize: 25, pageNumber: currentPage }));
+        };
+    
+        init();
     }, []);
+
+    const handleSubmit = async (): Promise<boolean> => {
+        if (!captchaId) {
+            alert("CAPTCHA не загружена. Попробуйте ещё раз.");
+            await loadCaptcha();
+            return false;
+        }
+
+        try {
+            const result = await axios.post(`${API_URL}/captcha/validate`, {
+                captchaId,
+                userInput,
+            });
+    
+            if (result.data.isValid) {
+                return true;
+            } else {
+                alert("Неверная CAPTCHA");
+                loadCaptcha();
+                return false;
+            }
+        } catch (err) {
+            alert("Ошибка проверки CAPTCHA");
+            console.error(err);
+            return false;
+        }
+    };
 
     useEffect(() => {
         dispatch(getComments({ pageSize: 25, pageNumber: currentPage, sortBy, descending }));
@@ -47,31 +94,15 @@ const Home: React.FC = () => {
         setNewComment(newComment);
     }
 
-    function buildCommentTree(comments: any[]): any[] {
-        const commentMap = new Map<number, any>();
-
-        const clonedComments = comments.map(comment => ({ ...comment, replies: [] }));
-
-        clonedComments.forEach(comment => {
-            commentMap.set(comment.id, comment);
-        });
-
-        const tree: any[] = [];
-
-        clonedComments.forEach(comment => {
-            if (comment.parentId) {
-                const parent = commentMap.get(comment.parentId);
-                if (parent) {
-                    parent.replies.push(comment);
-                }
-            } else {
-                tree.push(comment);
-            }
-        });
-        return tree;
-    } 
+    const closeModal = (id: string) => {
+        const modal = document.querySelector(`.modal#${id}`);
+        modal?.classList.remove('visible');
+    };
 
     const submit = async () => {
+        const isValid = await handleSubmit();
+        if (!isValid) return;
+
         const commentRequestDTO  = {
             parentId: null,
             Text: newComment
@@ -91,7 +122,17 @@ const Home: React.FC = () => {
             await dispatch(getComments({ pageSize: 25, pageNumber: 1 }));
             setNewComment(''); 
         }
+
+        if (modalRef.current) {
+            modalRef.current.classList.remove("visible");
+        }
     }
+
+    const openModal = () => {
+        if (modalRef.current) {
+          modalRef.current.classList.add('visible');
+        }
+      };
 
     return(
         <div>
@@ -101,7 +142,7 @@ const Home: React.FC = () => {
                 <div className='container'>
                     <div className="main-area__header">
                         <div>
-                            <ModalButton id="newComment" >new comment</ModalButton >
+                            <ModalButton modalRef={modalRef}>new comment</ModalButton >
                         </div>
                     </div>
                     <div className="main-area__content">
@@ -138,9 +179,18 @@ const Home: React.FC = () => {
                 </div>  
             </div>
 
-            <Modal id="newComment">
+            <Modal ref={modalRef}>
                 <ModalBodyMain>
                     <div>
+                        <div className="captcha-block">
+                            <img src={captchaUrl} alt="Captcha" />
+                            <input
+                                type="text"
+                                placeholder="Введите CAPTCHA"
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                            />
+                        </div>
                         <textarea 
                             className="comment-сreate" 
                             placeholder="your answer"
@@ -150,8 +200,7 @@ const Home: React.FC = () => {
                         <div className="comment-btn-block">
                             <FileUploadButton 
                                 onFileSelect={(selectedFile) => setFile(selectedFile)}
-                            />
-
+                            /> 
                             <button onClick={submit}>send</button>
                         </div>
                     </div>  

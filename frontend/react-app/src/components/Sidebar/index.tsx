@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState }from 'react';
+import React, { ChangeEvent,  useRef, useState }from 'react';
 import  { useSelector } from 'react-redux';
 import {  RootState } from "../../app/store/store";
 //images
@@ -12,8 +12,12 @@ import ModalBodyMain from '../ui/ModalBodyMain';
 import FormLogin from '../FormLogin';
 import FormRegister from '../FormRegister';
 
+
 const Sidebar: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
+    const signInModalRef = useRef<HTMLDivElement>(null);
+    const signUpModalRef = useRef<HTMLDivElement>(null);
+
 
     return(
         <div className='sidebar'>
@@ -24,9 +28,8 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
             </header>
-
-            
-                { auth.user ? 
+            <div>
+                {auth.user ? 
                     (
                         <div>
                             <button>Logout</button>
@@ -34,14 +37,14 @@ const Sidebar: React.FC = () => {
                     ) : (
                         <ul className='person__menu'>
                             <li className='person__item'>
-                                <ModalButton id='signInModal' className='person__item-btn'>
+                                <ModalButton modalRef={signInModalRef}  className='person__item-btn'>
                                     Sign In
         
                                     <img src={imgSignIn} alt='' />
                                 </ModalButton>
                             </li>
                             <li className='person__item'>
-                                <ModalButton id='signUpModal' className='person__item-btn'>
+                                <ModalButton modalRef={signUpModalRef}  className='person__item-btn'>
                                     Sign Up
         
                                     <img src={imgSignUp} alt='' />
@@ -50,16 +53,15 @@ const Sidebar: React.FC = () => {
                         </ul>
                     )
                 }
-               
-            
+            </div>
 
-            <Modal id='signInModal'>
+            <Modal ref={signInModalRef}>
                 <ModalBodyMain>
                     <FormLogin />
                 </ModalBodyMain>
             </Modal>
 
-            <Modal id="signUpModal">
+            <Modal ref={signUpModalRef}>
                 <ModalBodyMain>
                     <FormRegister />
                 </ModalBodyMain>
