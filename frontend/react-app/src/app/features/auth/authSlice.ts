@@ -37,8 +37,12 @@ export const login = createAsyncThunk<IAuthData, { email: string; password: stri
 
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>('/api/logout', async (_, { rejectWithValue }) => {
     try {
-        await AuthService.logout();
-        localStorage.removeItem('token');
+        const refresh = localStorage.getItem('tokenR');
+        if (!refresh) throw new Error("Refresh token not found");
+        await AuthService.logout(refresh);
+        localStorage.removeItem('tokenA');
+        localStorage.removeItem('tokenR');
+        localStorage.removeItem('user');
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message);
     }

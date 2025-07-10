@@ -1,6 +1,8 @@
 import React, { ChangeEvent,  useRef, useState }from 'react';
 import  { useSelector } from 'react-redux';
 import {  RootState } from "../../app/store/store";
+import { useAppDispatch } from '../../app/hooks';
+import { logout } from "../../app/features/auth/authSlice";
 //images
 import imgAvatar from '../../app/assets/images/person.svg';
 import imgSignUp from '../../app/assets/images/person-plus.svg';
@@ -14,6 +16,7 @@ import FormRegister from '../FormRegister';
 
 
 const Sidebar: React.FC = () => {
+    const dispatch = useAppDispatch();
     const auth = useSelector((state: RootState) => state.auth);
     const signInModalRef = useRef<HTMLDivElement>(null);
     const signUpModalRef = useRef<HTMLDivElement>(null);
@@ -26,6 +29,9 @@ const Sidebar: React.FC = () => {
         signInModalRef.current?.classList.remove("visible");
     };
 
+    const submit = async () => {
+        await dispatch(logout());
+    }
 
     return(
         <div className='sidebar'>
@@ -40,7 +46,7 @@ const Sidebar: React.FC = () => {
                 {auth.user ? 
                     (
                         <div>
-                            <button>Logout</button>
+                            <button onClick={submit}>Logout</button>
                         </div>
                     ) : (
                         <ul className='person__menu'>
