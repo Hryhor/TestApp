@@ -1,24 +1,28 @@
 import axios from "axios";
 import React, { useState, useEffect, ChangeEvent, useRef } from "react";
-import ReCAPTCHA from "react-google-recaptcha"; 
-import { RootState } from "../app/store/store";
 import { useSelector } from 'react-redux';
+import { RootState } from "../app/store/store";
 import { useAppDispatch } from "../app/hooks";
 import { getComments, createComment } from "../app/features/comments/commentsSlice";
+//components
 import Modal from "../components/ui/Modal";
 import ModalBodyMain from "../components/ui/ModalBodyMain";
 import ModalButton from "../components/ui/ModelButton";
 import CommentItem from "../components/Commentitem";
 import Sidebar from "../components/Sidebar";
 import FileUploadButton from "../components/FileUploadButton";
+import Sceleton from "../components/Sceleton";
 import { API_URL } from "../api";
+
 
 
 const Home: React.FC = () => {
     const dispatch = useAppDispatch();
     const auth = useSelector((state: RootState) => state.auth);
     const comments = useSelector((state: any) => state.comments.items);
+
     const modalRef = useRef<HTMLDivElement>(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [newComment, setNewComment] = useState("");
     const [file, setFile] = useState<File | null>(null);
@@ -30,14 +34,17 @@ const Home: React.FC = () => {
     const [userInput, setUserInput] = useState("");
     const [showCaptcha, setShowCaptcha] = useState(false)
 
-    //console.log(comments)
     const loadCaptcha = async () => {
-        const res = await fetch(`${API_URL}/captcha/generate`);
-        const blob = await res.blob();
-        const id = res.headers.get("Captcha-Id")!;
-        console.log("Captcha-Id from server:", id);
-        setCaptchaId(id);
-        setCaptchaUrl(URL.createObjectURL(blob));
+        try {
+            const res = await fetch(`${API_URL}/captcha/generate`);
+            const blob = await res.blob();
+            const id = res.headers.get("Captcha-Id")!;
+            //console.log("Captcha-Id from server:", id);
+            setCaptchaId(id);
+            setCaptchaUrl(URL.createObjectURL(blob));
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     useEffect(() => {
@@ -135,6 +142,8 @@ const Home: React.FC = () => {
         }
     }
 
+    const op = () => {}
+
     return(
         <div>
             <Sidebar />
@@ -162,10 +171,12 @@ const Home: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                            {
+                            {   comments.length === 0 ? (
+                                <Sceleton />              
+                                ) : (
                                 comments.map((comment: any) => (
                                     <CommentItem key={comment.id} comment={comment} />
-                                ))
+                                )))
                             }
                             </tbody>
                         </table>

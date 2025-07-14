@@ -1,59 +1,59 @@
-﻿using SkiaSharp;
-using System.Collections.Concurrent;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using Microsoft.Extensions.Caching.Distributed;
 
 public class CaptchaService
 {
-    private static readonly ConcurrentDictionary<string, string> Captchas = new();
+    private readonly IDistributedCache _cache;
+    private static readonly Random _random = new();
 
-    public (byte[] image, string captchaId) GenerateCaptcha()
+    public CaptchaService(IDistributedCache cache)
     {
-        string code = GenerateCode(5);
-        string id = Guid.NewGuid().ToString();
-
-        Captchas[id] = code;
-
-        var imageBytes = GenerateImage(code);
-        return (imageBytes, id);
+        _cache = cache;
     }
 
-    public bool ValidateCaptcha(string id, string userInput)
+    public (byte[] Image, string Id) GenerateCaptcha()
     {
-        if (Captchas.TryRemove(id, out var realCode))
+        var code = GenerateCode();
+        var id = Guid.NewGuid().ToString();
+
+        // сохраняем код в Redis (или в памяти, если без Redis)
+        _cache.SetString(id, code, new DistributedCacheEntryOptions
         {
-            return string.Equals(userInput, realCode, StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+
+        var image = GenerateImage(code);
+        return (image, id);
     }
 
-    private string GenerateCode(int length)
+    public bool ValidateCaptcha(string id, string input)
+    {
+        var code = _cache.GetString(id);
+        if (code == null) return false;
+        return string.Equals(code, input, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GenerateCode()
     {
         const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        var random = new Random();
-        return new string(Enumerable.Range(0, length)
-            .Select(_ => chars[random.Next(chars.Length)]).ToArray());
+        return new string(Enumerable.Range(0, 5)
+            .Select(_ => chars[_random.Next(chars.Length)]).ToArray());
     }
 
-    private byte[] GenerateImage(string code)
+    private static byte[] GenerateImage(string code)
     {
-        int width = 150;
-        int height = 50;
+        using var bitmap = new Bitmap(120, 40);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.Clear(Color.White);
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.White);
+        using var font = new Font("Arial", 20, FontStyle.Bold);
+        using var brush = new SolidBrush(Color.DarkBlue);
+        graphics.DrawString(code, font, brush, new PointF(10, 5));
 
-        using var paint = new SKPaint
-        {
-            Color = SKColors.Black,
-            IsAntialias = true,
-            TextSize = 32,
-            Typeface = SKTypeface.Default
-        };
-
-        canvas.DrawText(code, 20, 35, paint);
-
-        using var image = SKImage.FromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
+        using var ms = new MemoryStream();
+        bitmap.Save(ms, ImageFormat.Png);
+        return ms.ToArray();
     }
 }

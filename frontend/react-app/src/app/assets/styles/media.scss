@@ -1,0 +1,38 @@
+
+@media  (max-width: 1600px) {
+    .container {
+      max-width: 900px;
+    }
+  
+    .main-area__header {
+      min-width:  900px;
+    }
+  
+    .main-area__content {
+      min-width:  900px;
+    }
+}
+
+@media  (max-width: 1350px) {
+    .container {
+      max-width:  1200px;
+    }
+  
+    .sidebar {
+      width: 200px;
+    }
+  
+    .main-area {
+      margin-left: 200px;
+    }
+  
+    .main-area__header {
+      min-width: 760px;
+    }
+  
+    .main-area__content {
+      min-width: 760px;
+    }
+}
+  
+

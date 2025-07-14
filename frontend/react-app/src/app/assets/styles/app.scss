@@ -11,7 +11,10 @@ a {
 }
 
 .App {
-    position: relative;
+  min-height: 100vh;
+  display: flex; 
+  flex-direction: column;
+  position: relative;
 }
 
 .home {
@@ -24,6 +27,13 @@ a {
     margin: 0 auto;
     max-width: 1200px;
     box-sizing: border-box;
+
+
+    display: flex; 
+    flex-direction: column;
+    flex: 1 0 auto; 
+
+   
 }
 
 svg:focus {
@@ -37,6 +47,9 @@ svg:focus {
 .main-area {
     position: relative;
     margin-left: 300px;
+    display: flex;
+    flex-direction: column;
+    //min-height: 100vh;
 }
 
 .main-area__header {
@@ -45,17 +58,21 @@ svg:focus {
     justify-content: space-between;
     padding-top: 15px;
     margin-bottom: 15px;
+    min-width: 1200px;
 }
 
 .main-area__content {
+    flex: 1 0 auto; 
     margin-bottom: 15px;
+    min-width: 1200px;
 }
 
 .main-area__footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  flex-shrink: 0; 
 }
 
 @import "./blocks//sidebar.scss";
@@ -67,7 +84,12 @@ svg:focus {
 @import "./blocks/file-upload-btn.scss";
 @import "./blocks/table.scss";
 @import "./blocks/pagination.scss";
+@import "./blocks/sceleton.scss";
+@import "media.scss";
 
 .captcha-block {
   margin-bottom: 15px;
 }
+
+
+
