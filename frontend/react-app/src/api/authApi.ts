@@ -2,7 +2,7 @@ import axios from "axios";
 import { IAuthResponse } from "../interfaces";
 
 export const port = 7265;
-export const API_URL = `http://localhost:${port}/api/Auth`;
+export const API_URL = `${process.env.REACT_APP_API_URL}/api/Auth`;
 
 const $api = axios.create({
     withCredentials: true,
