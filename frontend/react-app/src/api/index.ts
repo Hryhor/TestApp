@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const port = 5112;
+export const port = 7265;
 export const API_URL = `http://localhost:${port}/api`;
 export const API = `http://localhost:${port}`;
 

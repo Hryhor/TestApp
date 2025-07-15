@@ -30,6 +30,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:3000",
+                               "http://172.20.111.172:3000",
                                "http://localhost:3002",
                                "http://localhost:3003",
                                "http://localhost:5173",
@@ -125,9 +126,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(MyAllowSpecificOrigins);
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 
@@ -136,19 +139,15 @@ app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")), // путь к папке
-    RequestPath = "/Uploads" // путь в URL
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    RequestPath = "/Uploads" 
 });
 
-/*var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
 if (!Directory.Exists(uploadsPath))
 {
     Directory.CreateDirectory(uploadsPath);
 }
-
-
-
-
 
 app.Urls.Clear();
 app.Urls.Add("http://0.0.0.0:7265");
@@ -158,7 +157,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
-*/
+
 app.Run();
 
 

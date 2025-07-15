@@ -1,7 +1,7 @@
 import axios from "axios";
 import { IAuthResponse } from "../interfaces";
 
-export const port = 5112;
+export const port = 7265;
 export const API_URL = `http://localhost:${port}/api/Auth`;
 
 const $api = axios.create({

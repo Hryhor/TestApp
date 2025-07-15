@@ -37,6 +37,11 @@ namespace CommentsApp.Services
 
             foreach (var comment in allComments)
             {
+                comment.Replies = new List<Comment>();
+            }
+
+            foreach (var comment in allComments)
+            {
                 if (comment.ParentId is null)
                 {
                     rootComments.Add(comment);
