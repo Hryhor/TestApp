@@ -136,6 +136,13 @@ app.MapControllers();
 
 app.UseStaticFiles();
 
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -143,7 +150,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/Uploads" 
 });
 
-var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+
 if (!Directory.Exists(uploadsPath))
 {
     Directory.CreateDirectory(uploadsPath);
@@ -151,12 +158,12 @@ if (!Directory.Exists(uploadsPath))
 
 app.Urls.Clear();
 app.Urls.Add("http://0.0.0.0:7265");
-
+/*
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
-}
+}*/
 
 app.Run();
 

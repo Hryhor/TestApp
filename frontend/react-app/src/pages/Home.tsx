@@ -15,7 +15,6 @@ import Sceleton from "../components/Sceleton";
 import { API_URL } from "../api";
 
 
-
 const Home: React.FC = () => {
     const dispatch = useAppDispatch();
     const auth = useSelector((state: RootState) => state.auth);
@@ -32,14 +31,21 @@ const Home: React.FC = () => {
     const [captchaId, setCaptchaId] = useState("");
     const [captchaUrl, setCaptchaUrl] = useState("");
     const [userInput, setUserInput] = useState("");
-    const [showCaptcha, setShowCaptcha] = useState(false)
+    const [showCaptcha, setShowCaptcha] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => {
+      setSidebarOpen(prev => !prev);
+    };
+
+    const closeSidebar = () => setSidebarOpen(false);
 
     const loadCaptcha = async () => {
         try {
             const res = await fetch(`${API_URL}/captcha/generate`);
             const blob = await res.blob();
             const id = res.headers.get("Captcha-Id")!;
-            //console.log("Captcha-Id from server:", id);
+
             setCaptchaId(id);
             setCaptchaUrl(URL.createObjectURL(blob));
         } catch (err) {
@@ -56,11 +62,9 @@ const Home: React.FC = () => {
         init();
     }, []);
 
-
     useEffect(() => {
         dispatch(getComments({ pageSize: 25, pageNumber: currentPage, sortBy, descending }));
     }, [currentPage, sortBy, descending  ]);
-
 
     const sort = (column: string) => {
         if (sortBy === column) {
@@ -142,20 +146,19 @@ const Home: React.FC = () => {
         }
     }
 
-    const op = () => {}
-
     return(
-        <div>
-            <Sidebar />
+        <div className="flex-container">
+            <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
             
-            <div className='main-area'>
-                <div className='container'>
+            <div className="main-area flex-container">
+                <div className="container">
                     <div className="main-area__header">
-                        <div>
-                            <ModalButton modalRef={modalRef}>new comment</ModalButton >
-                        </div>
+                        <button className="mobile-nav__btn" onClick={toggleSidebar}> 
+                            <span className="mobile-nav__btn--icon"></span>
+                        </button>
+                        <ModalButton className={"crate-comment__btn"} modalRef={modalRef}>new comment</ModalButton >
                     </div>
-                    <div className="main-area__content">
+                    <div className="main-area__content flex-container">
                         <table>
                             <thead>
                                 <tr>
@@ -184,7 +187,7 @@ const Home: React.FC = () => {
                     <div className="main-area__footer">
                         <div className="pagination">
                             <button className="pagination__btn" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Back</button>
-                            <span>Page {currentPage}</span>
+                                <span>Page {currentPage}</span>
                             <button className="pagination__btn" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
                         </div>
                     </div>

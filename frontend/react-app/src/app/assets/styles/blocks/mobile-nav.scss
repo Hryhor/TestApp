@@ -1,0 +1,40 @@
+.mobile-nav__btn {
+    border: 0;
+    background: transparent;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+  
+.mobile-nav__btn--icon {
+    display: block;
+    position: absolute;
+    width: 40px;
+    height: 5px;
+    background-color: $accent-color;
+    z-index: 990;
+  
+    &::after,
+    &::before {
+        position: absolute;
+        content: ' ';
+        width: 40px;
+        height: 5px;
+        background-color: $accent-color;
+        transition: transform 0.15s ease-in, top 0.15s ease-in 0.15s;
+    }
+  
+    &::before {
+        left: 0;
+        top: -10px;
+    }
+        
+     &::after {
+        left: 0;
+        top: 10px;
+    }
+}
+  

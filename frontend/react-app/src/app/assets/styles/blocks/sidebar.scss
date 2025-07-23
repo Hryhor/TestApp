@@ -1,10 +1,37 @@
 .sidebar {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: auto;
     bottom: 0;
-    background-color: #f6f6f6;
     width: 300px;
     padding: 15px;
+    background-color: $accent-color;
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+    z-index: 999;
+}
+
+.sidebar__main-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    z-index: 100;
+}
+
+.sidebar__wrap-btn {
+    position: absolute;
+    top: 45%;
+    right: 0;
+}
+
+.sidebar__close-btn {
+    display: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 100%;
+    border: 0;
+    align-items: center;
+    justify-content: center;
 }

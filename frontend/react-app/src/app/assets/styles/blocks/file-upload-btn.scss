@@ -1,3 +1,8 @@
+.file-upload {
+    border: 1px dashed;
+    padding: 10px;
+}
+
 .file-upload-button {
     display: inline-flex;
     align-items: center;
@@ -24,6 +29,10 @@
     display: none; 
 }
 
-.file-upload__btn{
+.file-upload__btn {
+    margin-bottom: 10px;
+}
+
+.file-upload__info {
     color: #888; 
 }

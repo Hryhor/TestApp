@@ -88,12 +88,18 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onFileSelect }) => 
         
     return (
         <div>
-            <button onClick={handleFileButtonClick} type="button">
+            <button className="file-upload__btn" onClick={handleFileButtonClick} type="button">
                 <img src={ClipIcon} className="clip-icon" alt="Clip" />
             </button>
-            <p className="file-upload__btn">File name: {file?.name}</p>
-            <p className="file-upload__btn">File size: {file?.size}</p>
-            <p className="file-upload__btn">File type: {file?.type}</p>
+            {
+                file && (
+                    <div className="file-upload">
+                        <p className="file-upload__info">File name: {file?.name}</p>
+                        <p className="file-upload__info">File size: {file?.size}</p>
+                        <p className="file-upload__info">File type: {file?.type}</p>
+                    </div>
+                )
+            }
             <input
                 type="file"
                 accept="image/jpeg,image/png,image/gif,text/plain,.jpg,.jpeg,.png,.gif,.txt"

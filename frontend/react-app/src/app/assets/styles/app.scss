@@ -23,17 +23,19 @@ a {
     }
 }
 
+.flex-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+}
+
 .container {
     margin: 0 auto;
     max-width: 1200px;
     box-sizing: border-box;
-
-
     display: flex; 
     flex-direction: column;
     flex: 1 0 auto; 
-
-   
 }
 
 svg:focus {
@@ -49,7 +51,6 @@ svg:focus {
     margin-left: 300px;
     display: flex;
     flex-direction: column;
-    //min-height: 100vh;
 }
 
 .main-area__header {
@@ -85,11 +86,23 @@ svg:focus {
 @import "./blocks/table.scss";
 @import "./blocks/pagination.scss";
 @import "./blocks/sceleton.scss";
-@import "media.scss";
+
 
 .captcha-block {
   margin-bottom: 15px;
 }
 
+.crate-comment__btn {
+    background: none;
+    border: 1px solid #000;
+    padding: 10px 20px;
+    transition:  all .3s ease-in-out;
 
+    &:hover {
+        transform: rotate(360deg);
+    }
+}
+
+@import "./blocks/mobile-nav.scss";
+@import "media.scss";
 
